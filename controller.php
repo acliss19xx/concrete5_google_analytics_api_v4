@@ -64,10 +64,6 @@ class Controller extends Package {
             $key->setAttributeKeyName('google api service json');
             $key = $category->add('image_file', $key, null, $pkg);
         }
-        
-        
-
-
     }
 }
 ?>

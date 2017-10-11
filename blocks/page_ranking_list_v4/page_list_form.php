@@ -15,6 +15,43 @@ $form = Loader::helper('form/page_selector');
 
         <fieldset>
             <div class="form-group">
+                <label class="control-label"><?php echo t('google analytics date')?></label>
+                <select name="analyticsStartDate" class="form-control">
+                    <?php
+                    $daysAgo = array("0" => "today",
+                                     "1"=> "1 days ago",
+                                     "7" => "1 week ago",
+                                     "14" => "2 week ago",
+                                     "31" => "1 month ago",
+                                     "62" => "2 month ago",
+                                     "365" => "1 year ago");
+                    foreach($daysAgo as $key => $value){ ?>
+                        <option value="<?php echo $key?>" <?php echo $analyticsStartDate == $key ? 'selected':'' ?>>
+                            <?php echo t($value) ?>
+                        </option>
+                    <?php } ?>
+                </select>
+                <select name="analyticsEndDate" class="form-control">
+                    <?php
+                    $daysAgo = array("0" => "today",
+                                     "1"=> "1 days ago",
+                                     "7" => "1 week ago",
+                                     "14" => "2 week ago",
+                                     "31" => "1 month ago",
+                                     "62" => "2 month ago",
+                                     "365" => "1 year ago");
+                    foreach($daysAgo as $key => $value){ ?>
+                        <option value="<?php echo $key?>" <?php echo $analyticsEndDate == $key ? 'selected':'' ?>>
+                            <?php echo t($value) ?>
+                    </option>
+                    <?php } ?>
+                </select>
+            </div>
+        </fieldset>
+
+
+        <fieldset>
+            <div class="form-group">
                 <label class='control-label'><?php echo t('Number of Pages to Display') ?></label>
                 <input type="text" name="num" value="<?php echo $num ?>" class="form-control">
             </div>
@@ -296,7 +333,6 @@ $form = Loader::helper('form/page_selector');
         </fieldset>
 
         <fieldset>
-
             <div class="form-group">
                 <label class="control-label"><?php echo t('Sort')?></label>
                 <select name="orderBy" class="form-control">

@@ -113,6 +113,18 @@
     <field name="truncateChars" type="integer">
       <default value="128"/>
     </field>
+
+    <field name="analyticsStartDate" type="integer">
+      <unsigned/>
+      <default value="1"/>
+      <notnull/>
+    </field>
+    <field name="analyticsEndDate" type="integer">
+      <unsigned/>
+      <default value="1"/>
+      <notnull/>
+    </field>
+
     <index name="ptID">
       <col>ptID</col>
     </index>

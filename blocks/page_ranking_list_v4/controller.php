@@ -188,13 +188,17 @@ class Controller extends BlockController
 
         $client = new \Google_Client();
         $api_file = Core::make('site')->getSite()->getAttribute('google_api_service_json');
-        $client->setApplicationName("Hello Analytics Reporting");
-        $client->setAuthConfig($_SERVER['DOCUMENT_ROOT'] . $api_file->getRelativePath());
-        $client->setScopes(['https://www.googleapis.com/auth/analytics.readonly']);
-        $analytics = new \Google_Service_AnalyticsReporting($client);
-
-          $response = $this->getReport($analytics);
-          return $this->printResults($response);
+        if(is_object($api_file)){
+            $client->setApplicationName("Hello Analytics Reporting");
+            $client->setAuthConfig($_SERVER['DOCUMENT_ROOT'] . $api_file->getRelativePath());
+            $client->setScopes(['https://www.googleapis.com/auth/analytics.readonly']);
+            $analytics = new \Google_Service_AnalyticsReporting($client);
+    
+              $response = $this->getReport($analytics);
+              return $this->printResults($response);
+        }else{
+            echo 'ファイルが選択されていません。';
+        }
 
     }
     
@@ -205,9 +209,16 @@ class Controller extends BlockController
     
       // Create the DateRange object.
       $dateRange = new \Google_Service_AnalyticsReporting_DateRange();
-      $dateRange->setStartDate("31daysAgo");
-      $dateRange->setEndDate("today");
-    
+      if(is_numeric($this->analyticsStartDate)){
+          $dateRange->setStartDate($this->analyticsStartDate . "daysAgo");
+      }else{
+          $dateRange->setStartDate("31daysAgo");
+      }
+      if(is_numeric($this->analyticsEndDate)){
+         $dateRange->setEndDate($this->analyticsEndDate ."daysAgo");
+      }else{
+          $dateRange->setEndDate("0daysAgo");
+      }    
       // Create the Metrics object.
       $sessions = new \Google_Service_AnalyticsReporting_Metric();
       $sessions->setExpression("ga:sessions");
@@ -326,7 +337,7 @@ class Controller extends BlockController
             foreach ($li as $key => $val){
                 $page_ga = Page::getByPath($key);
                 if(is_numeric($page_ga->getCollectionID())){
-                    echo 'page name:' . $page_ga->getCollectionID() . '----' . $key . '<br/>';
+//                    echo 'page name:' . $page_ga->getCollectionID() . '----' . $key . '<br/>';
                     if(!$page_ga->isSystemPage() && !$page_ga->isHomePage()){
                         foreach($pages as $p){
                             if($p->getCollectionID() === $page_ga->getCollectionID()){
