@@ -10,10 +10,17 @@ use Page;
 use Core;
 use Config;
 use PageList;
+use File;
 use Concrete\Core\Attribute\Key\CollectionKey;
 use Concrete\Core\Tree\Node\Type\Topic;
 use \Concrete\Core\Http\Response;
 use \Concrete\Core\Http\ResponseFactoryInterface;
+
+if (!function_exists('compat_is_version_8')) {
+    function compat_is_version_8() {
+        return interface_exists('\Concrete\Core\Export\ExportableInterface');
+    }
+}
 
 class Controller extends BlockController
 {
@@ -187,7 +194,14 @@ class Controller extends BlockController
     private function analyticsInitialize(){
 
         $client = new \Google_Client();
-        $api_file = Core::make('site')->getSite()->getAttribute('google_api_service_json');
+        if($this->analyticsServiceJson){
+            $api_file = File::getByID($this->analyticsServiceJson);
+        }else{
+            if(compat_is_version_8()){
+                $api_file = Core::make('site')->getSite()->getAttribute('google_api_service_json');
+            }
+        }
+        
         if(is_object($api_file)){
             $client->setApplicationName("Hello Analytics Reporting");
             $client->setAuthConfig($_SERVER['DOCUMENT_ROOT'] . $api_file->getRelativePath());
@@ -205,8 +219,6 @@ class Controller extends BlockController
     private function getReport($analytics) {
     
       // Replace with your view ID. E.g., XXXX.
-      $VIEW_ID = "160864985";
-    
       // Create the DateRange object.
       $dateRange = new \Google_Service_AnalyticsReporting_DateRange();
       if(is_numeric($this->analyticsStartDate)){
@@ -242,7 +254,13 @@ class Controller extends BlockController
       
       // Create the ReportRequest object.
       $request = new \Google_Service_AnalyticsReporting_ReportRequest();
-      $request->setViewId($VIEW_ID);
+      if($this->analyticsViewID){
+          $request->setViewId($this->analyticsViewID);
+      }else{
+          if(compat_is_version_8()){
+              $request->setViewId(Core::make('site')->getSite()->getAttribute('google_api_view_id'));
+          }
+      }
       $request->setDimensions($dimension);
       $request->setDateRanges($dateRange);
       $request->setOrderBys($ordering);
@@ -289,81 +307,83 @@ class Controller extends BlockController
     
     public function view()
     {
-
-        $list = $this->list;
-        $nh = Core::make('helper/navigation');
-        $this->set('nh', $nh);
-
-        if ($this->pfID) {
-            $this->requireAsset('css', 'font-awesome');
-            $feed = Feed::getByID($this->pfID);
-            if (is_object($feed)) {
-                $this->set('rssUrl', $feed->getFeedURL());
-                $link = $feed->getHeadLinkElement();
-                $this->addHeaderItem($link);
-            }
-        }
-
-/*
-        //Pagination...
-        $showPagination = false;
-        if ($this->num > 0) {
-            $list->setItemsPerPage($this->num);
-            $pagination = $list->getPagination();
-            $pages = $pagination->getCurrentPageResults();
-            if ($pagination->getTotalPages() > 1 && $this->paginate) {
-                $showPagination = true;
-                $pagination = $pagination->renderDefaultView();
-                $this->set('pagination', $pagination);
-            }
-        } else {
-            $pages = $list->getResults();
-        }
-*/
-
-        $pages = $list->getResults();
-
-        $results = $this->analyticsInitialize();
-        // 取得結果でループします。
-        if(is_array($results)){
-            foreach ($results as $row) {
-                if(strpos($row['pagePath'],'cID') === false){
-                    //
-                    $li[str_replace('/index.php','',$row['pagePath'])] = $row['pvCount'];  // 「キー: ページのパス、値: PV」で配列に追加します。
+        $c = Page::getCurrentPage();
+        if(!$c->isEditMode()){
+            $list = $this->list;
+            $nh = Core::make('helper/navigation');
+            $this->set('nh', $nh);
+    
+            if ($this->pfID) {
+                $this->requireAsset('css', 'font-awesome');
+                $feed = Feed::getByID($this->pfID);
+                if (is_object($feed)) {
+                    $this->set('rssUrl', $feed->getFeedURL());
+                    $link = $feed->getHeadLinkElement();
+                    $this->addHeaderItem($link);
                 }
             }
-        
-            $pages_ga = [];
-            foreach ($li as $key => $val){
-                $page_ga = Page::getByPath($key);
-                if(is_numeric($page_ga->getCollectionID())){
-//                    echo 'page name:' . $page_ga->getCollectionID() . '----' . $key . '<br/>';
-                    if(!$page_ga->isSystemPage() && !$page_ga->isHomePage()){
-                        foreach($pages as $p){
-                            if($p->getCollectionID() === $page_ga->getCollectionID()){
-                                $pages_ga[] = $page_ga;
+    
+    /*
+            //Pagination...
+            $showPagination = false;
+            if ($this->num > 0) {
+                $list->setItemsPerPage($this->num);
+                $pagination = $list->getPagination();
+                $pages = $pagination->getCurrentPageResults();
+                if ($pagination->getTotalPages() > 1 && $this->paginate) {
+                    $showPagination = true;
+                    $pagination = $pagination->renderDefaultView();
+                    $this->set('pagination', $pagination);
+                }
+            } else {
+                $pages = $list->getResults();
+            }
+    */
+    
+            $pages = $list->getResults();
+    
+            $results = $this->analyticsInitialize();
+            // 取得結果でループします。
+            if(is_array($results)){
+                foreach ($results as $row) {
+                    if(strpos($row['pagePath'],'cID') === false){
+                        //
+                        $li[str_replace('/index.php','',$row['pagePath'])] = $row['pvCount'];  // 「キー: ページのパス、値: PV」で配列に追加します。
+                    }
+                }
+            
+                $pages_ga = [];
+                foreach ($li as $key => $val){
+                    $page_ga = Page::getByPath($key);
+                    if(is_numeric($page_ga->getCollectionID())){
+    //                    echo 'page name:' . $page_ga->getCollectionID() . '----' . $key . '<br/>';
+                        if(!$page_ga->isSystemPage() && !$page_ga->isHomePage()){
+                            foreach($pages as $p){
+                                if($p->getCollectionID() === $page_ga->getCollectionID()){
+                                    $pages_ga[] = $page_ga;
+                                }
                             }
                         }
                     }
                 }
-            }
-            
-            $pages = [];
-            if($this->num > 0){
-                for($i = 0; $this->num > $i ; $i++){
-                    $pages[] = $pages_ga[$i];          
+                
+                $pages = [];
+                if($this->num > 0){
+                    for($i = 0; $this->num > $i ; $i++){
+                        $pages[] = $pages_ga[$i];          
+                    }
+                }else{
+                 $pages = $pages_ga;   
                 }
-            }else{
-             $pages = $pages_ga;   
+    
             }
-
+            if ($showPagination) {
+                $this->requireAsset('css', 'core/frontend/pagination');
+            }
+            $this->set('pages', $pages);
+            $this->set('list', $list);
+            $this->set('showPagination', $showPagination);
         }
-        if ($showPagination) {
-            $this->requireAsset('css', 'core/frontend/pagination');
-        }
-        $this->set('pages', $pages);
-        $this->set('list', $list);
-        $this->set('showPagination', $showPagination);
     }
 
     public function add()
@@ -399,6 +419,14 @@ class Controller extends BlockController
                 $this->set('rssFeed', $feed);
             }
         }
+        
+        if($this->analyticsServiceJson){
+            $bf = File::getByID($this->analyticsServiceJson);
+            if(is_object($bf)){
+                $this->set('bf', $bf);
+            }
+        }        
+        
         $uh = Core::make('helper/concrete/urls');
         $this->set('uh', $uh);
         $this->set('bt', BlockType::getByHandle('page_list'));

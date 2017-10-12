@@ -5,9 +5,11 @@ $c = Page::getCurrentPage();
 $dh = Core::make('helper/date'); /* @var $dh \Concrete\Core\Localization\Service\Date */
 ?>
 
-<?php if ($c->isEditMode() && count($pages)) {
+<?php if ($c->isEditMode()) {
     ?>
-    <div class="ccm-edit-mode-disabled-item"><?php echo t('Empty Page List Block.')?></div>
+	<div class="ccm-edit-mode-disabled-item" style="width: <?php echo $width; ?>; height: <?php echo $height; ?>">
+		<div style="padding: 80px 0px 0px 0px"><?php echo t('page ranking list disabled in edit mode.')?></div>
+	</div>
 
 <?php }else if (count($pages) == 0){ ?>
     <div class="ccm-block-page-list-no-pages"><?php echo h($noResultsMessage)?></div>

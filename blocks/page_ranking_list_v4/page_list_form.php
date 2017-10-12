@@ -12,6 +12,26 @@ $form = Loader::helper('form/page_selector');
     <div class=" pagelist-form">
 
         <input type="hidden" name="pageListToolsDir" value="<?php echo Loader::helper('concrete/urls')->getBlockTypeToolsURL($bt) ?>/"/>
+        
+        <?php
+        $al = Core::make('helper/concrete/asset_library');
+        ?>
+        
+        <fieldset>
+            <legend><?php echo t('Analytics Service Json File') ?></legend>
+        
+            <div class="form-group">
+                <label class="control-label"><?php echo t('Analytics service json file')?></label>
+                <?php
+                echo $al->file('ccm-b-file', 'analyticsServiceJson', t('Choose file'),$bf);
+                ?>
+            </div>
+            <div class="form-group">
+                <label class='control-label'><?php echo t('Analytics View ID') ?></label>
+                <input type="text" name="analyticsViewID" value="<?php echo $analyticsViewID ?>" class="form-control">
+            </div>
+        
+        </fieldset>
 
         <fieldset>
             <div class="form-group">
