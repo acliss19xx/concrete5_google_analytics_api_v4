@@ -5,10 +5,17 @@ use Core;
 use BlockType;
 use BlockTypeSet;
 use Config;
-use Concrete\Core\Entity\Attribute\Key\SiteKey;
+
 //use \Concrete\Core\Page\Single as SinglePage;
 
 defined('C5_EXECUTE') or die(_("Access Denied."));
+
+if (!function_exists('compat_is_version_8')) {
+    function compat_is_version_8() {
+        return interface_exists('\Concrete\Core\Export\ExportableInterface');
+    }
+}
+
 class Controller extends Package {
     protected $pkgHandle = 'page_ranking_list_ga_v4';
     protected $appVersionRequired = '5.1.0';
@@ -45,6 +52,7 @@ class Controller extends Package {
             }
         }
 
+        // file extension
         $file_access_file_types = Core::make('helper/concrete/file')->unserializeUploadFileExtensions(
             Config::get('concrete.upload.extensions'));
         if(array_search('json',$file_access_file_types) === false){
@@ -53,16 +61,27 @@ class Controller extends Package {
             Config::save('concrete.upload.extensions', $types);
         }
 
-        $service = $this->app->make('Concrete\Core\Attribute\Category\CategoryService');
-        $categoryEntity = $service->getByHandle('site');
-        $category = $categoryEntity->getController();
-
-        $siteKey = $category->getByHandle('google_api_service_json');
-        if(!is_object($siteKey)){
-            $key = new SiteKey();
-            $key->setAttributeKeyHandle('google_api_service_json');
-            $key->setAttributeKeyName('google api service json');
-            $key = $category->add('image_file', $key, null, $pkg);
+        // site attribute
+        if(compat_is_version_8()){
+            $service = $this->app->make('Concrete\Core\Attribute\Category\CategoryService');
+            $categoryEntity = $service->getByHandle('site');
+            $category = $categoryEntity->getController();
+    
+            $siteKey = $category->getByHandle('google_api_service_json');
+            if(!is_object($siteKey)){
+                $key = new \Concrete\Core\Entity\Attribute\Key\SiteKey();
+                $key->setAttributeKeyHandle('google_api_service_json');
+                $key->setAttributeKeyName('google api service json');
+                $key = $category->add('image_file', $key, null, $pkg);
+            }
+    
+            $siteKey = $category->getByHandle('google_api_view_id');
+            if(!is_object($siteKey)){
+                $key = new \Concrete\Core\Entity\Attribute\Key\SiteKey();
+                $key->setAttributeKeyHandle('google_api_view_id');
+                $key->setAttributeKeyName('google api viewID');
+                $key = $category->add('text', $key, null, $pkg);
+            }
         }
     }
 }

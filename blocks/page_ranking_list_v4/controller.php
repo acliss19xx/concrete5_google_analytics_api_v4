@@ -192,7 +192,6 @@ class Controller extends BlockController
 
 
     private function analyticsInitialize(){
-
         $client = new \Google_Client();
         if($this->analyticsServiceJson){
             $api_file = File::getByID($this->analyticsServiceJson);
@@ -207,13 +206,11 @@ class Controller extends BlockController
             $client->setAuthConfig($_SERVER['DOCUMENT_ROOT'] . $api_file->getRelativePath());
             $client->setScopes(['https://www.googleapis.com/auth/analytics.readonly']);
             $analytics = new \Google_Service_AnalyticsReporting($client);
-    
-              $response = $this->getReport($analytics);
-              return $this->printResults($response);
+            $response = $this->getReport($analytics);
+            return $this->printResults($response);
         }else{
-            echo 'ファイルが選択されていません。';
+            echo t('file not found');
         }
-
     }
     
     private function getReport($analytics) {
@@ -340,36 +337,42 @@ class Controller extends BlockController
             }
     */
     
-            $pages = $list->getResults();
-    
-            $results = $this->analyticsInitialize();
+            $pages_c5 = $list->getResults();
+            $pages = [];
+            try{
+                $results = $this->analyticsInitialize();
+            }catch(\Google_Service_Exception $e){
+                echo $e->getMessag();
+            }
+            $li = [];
             // 取得結果でループします。
             if(is_array($results)){
                 foreach ($results as $row) {
-                    if(strpos($row['pagePath'],'cID') === false){
-                        //
-                        $li[str_replace('/index.php','',$row['pagePath'])] = $row['pvCount'];  // 「キー: ページのパス、値: PV」で配列に追加します。
+                    $analyURL = $row['pagePath'];
+                    if(strpos($analyURL,'cID') === false){
+                        $analyURL = substr($analyURL,strlen(DIR_REL),255);
+                        $li[str_replace('/index.php' ,'', $analyURL)] = $row['pvCount'];  // 「キー: ページのパス、値: PV」で配列に追加します。
                     }
                 }
             
                 $pages_ga = [];
-                foreach ($li as $key => $val){
-                    $page_ga = Page::getByPath($key);
-                    if(is_numeric($page_ga->getCollectionID())){
-    //                    echo 'page name:' . $page_ga->getCollectionID() . '----' . $key . '<br/>';
-                        if(!$page_ga->isSystemPage() && !$page_ga->isHomePage()){
-                            foreach($pages as $p){
-                                if($p->getCollectionID() === $page_ga->getCollectionID()){
-                                    $pages_ga[] = $page_ga;
+                if(count($li)){
+                    foreach ($li as $key => $val){
+                        $page_ga = Page::getByPath($key);
+                        if(is_numeric($page_ga->getCollectionID())){
+                            if(!$page_ga->isSystemPage() && !$page_ga->isHomePage()){
+                                foreach($pages_c5 as $p){
+                                    if($p->getCollectionID() === $page_ga->getCollectionID()){
+                                        $pages_ga[] = $page_ga;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-                
                 $pages = [];
                 if($this->num > 0){
-                    for($i = 0; $this->num > $i ; $i++){
+                    for($i = 0; $this->num > $i && count($pages_ga) > $i; $i++){
                         $pages[] = $pages_ga[$i];          
                     }
                 }else{
