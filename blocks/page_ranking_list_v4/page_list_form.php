@@ -35,40 +35,64 @@ $form = Loader::helper('form/page_selector');
 
         <fieldset>
             <div class="form-group">
-                <label class="control-label"><?php echo t('google analytics date')?></label>
-                <select name="analyticsStartDate" class="form-control">
-                    <?php
-                    $daysAgo = array("31" => "1 month ago",
-                                     "0" => "today",
-                                     "1"=> "1 days ago",
-                                     "7" => "1 week ago",
-                                     "14" => "2 week ago",
-                                     "62" => "2 month ago",
-                                     "365" => "1 year ago");
-                    foreach($daysAgo as $key => $value){ ?>
-                        <option value="<?php echo $key?>" <?php echo $analyticsStartDate == $key ? 'selected':'' ?>>
-                            <?php echo t($value) ?>
-                        </option>
-                    <?php } ?>
-                </select>
-                <select name="analyticsEndDate" class="form-control">
-                    <?php
-                    $daysAgo = array("0" => "today",
-                                     "1"=> "1 days ago",
-                                     "7" => "1 week ago",
-                                     "14" => "2 week ago",
-                                     "31" => "1 month ago",
-                                     "62" => "2 month ago",
-                                     "365" => "1 year ago");
-                    foreach($daysAgo as $key => $value){ ?>
-                        <option value="<?php echo $key?>" <?php echo $analyticsEndDate == $key ? 'selected':'' ?>>
-                            <?php echo t($value) ?>
-                    </option>
-                    <?php } ?>
-                </select>
+                <div class="row">
+                    <div class="col-xs-6">
+                        <label for="analyticsStartDate" class="control-label"><?php echo t('pv start date')?></label>
+                        <select name="analyticsStartDate" id="analyticsStartDate" class="form-control" onChange="analyticsDateSwap()">
+                            <?php
+                            $daysAgo = array("31" => "1 month ago",
+                                             "0" => "today",
+                                             "1"=> "1 days ago",
+                                             "7" => "1 week ago",
+                                             "14" => "2 week ago",
+                                             "62" => "2 month ago",
+                                             "365" => "1 year ago");
+                            foreach($daysAgo as $key => $value){ ?>
+                                <option value="<?php echo $key?>" <?php echo $analyticsStartDate == $key ? 'selected':'' ?>>
+                                    <?php echo t($value) ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="col-xs-6">
+                        <label for="analyticsEndDate" class="control-label"><?php echo t('pv end date')?></label>
+                        <select name="analyticsEndDate" id="analyticsEndDate" class="form-control" onChange="analyticsDateSwap()">
+                            <?php
+                            $daysAgo = array("0" => "today",
+                                             "1"=> "1 days ago",
+                                             "7" => "1 week ago",
+                                             "14" => "2 week ago",
+                                             "31" => "1 month ago",
+                                             "62" => "2 month ago",
+                                             "365" => "1 year ago");
+                            foreach($daysAgo as $key => $value){ ?>
+                                <option value="<?php echo $key?>" <?php echo $analyticsEndDate == $key ? 'selected':'' ?>>
+                                    <?php echo t($value) ?>
+                            </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                </div>
             </div>
         </fieldset>
 
+        <fieldset>
+            <div class="form-group">
+                <label class="control-label"><?php echo t('Sort')?></label>
+                <select name="orderBy" class="form-control">
+                    <option value="ranking_desc" <?php if ($orderBy == 'ranking_desc') {
+                        ?> selected <?php
+                    } ?>>
+                        <?php echo t('descending order of PV') ?>
+                    </option>
+                    <option value="ranking_asc" <?php if ($orderBy == 'ranking_asc') {
+                        ?> selected <?php
+                    } ?>>
+                        <?php echo t('order of PV') ?>
+                    </option>
+                </select>
+            </div>
+        </fieldset>
 
         <fieldset>
             <div class="form-group">
@@ -350,24 +374,6 @@ $form = Loader::helper('form/page_selector');
 
             </div>
 
-        </fieldset>
-
-        <fieldset>
-            <div class="form-group">
-                <label class="control-label"><?php echo t('Sort')?></label>
-                <select name="orderBy" class="form-control">
-                    <option value="ranking_desc" <?php if ($orderBy == 'ranking_desc') {
-                        ?> selected <?php
-                    } ?>>
-                        <?php echo t('descending order of PV') ?>
-                    </option>
-                    <option value="ranking_asc" <?php if ($orderBy == 'ranking_asc') {
-                        ?> selected <?php
-                    } ?>>
-                        <?php echo t('order of PV') ?>
-                    </option>
-                </select>
-            </div>
         </fieldset>
 
         <fieldset>

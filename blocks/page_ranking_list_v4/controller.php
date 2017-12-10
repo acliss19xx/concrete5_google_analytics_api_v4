@@ -284,15 +284,9 @@ class Controller extends BlockController
           $row = $rows[ $rowIndex ];
           $dimensions = $row->getDimensions();
           $metrics = $row->getMetrics();
-/*
-?><pre><?php 
-          var_dump($metrics);
-?></pre><?php
-*/
           for ($i = 0; $i < count($dimensionHeaders) && $i < count($dimensions); $i++) {
             if(strpos($dimensions[$i],'cID') === false){
                 $pages_ga[] = array('pagePath' => $dimensions[$i], 'pvCount'=> $metrics[$i]['values'][0]); 
-//                print($dimensionHeaders[$i] . ": " . $dimensions[$i] . "---" . $metrics[$i]['values'][0] .  "<br/>");
             }
           }
         }
@@ -342,7 +336,8 @@ class Controller extends BlockController
             try{
                 $results = $this->analyticsInitialize();
             }catch(\Google_Service_Exception $e){
-                echo $e->getMessag();
+//                echo $e->getMessage();
+                echo t("Can not access Google Analytics");
             }
             $li = [];
             // 取得結果でループします。

@@ -28,7 +28,8 @@ class Controller extends Package {
     
     
     public function on_start(){
-        require $this->getPackagePath() . '/vendor/Google/vendor/autoload.php';
+//        require $this->getPackagePath() . '/vendor/Google/vendor/autoload.php';
+        require $this->getPackagePath() . '/vendor/autoload.php';
     }
     
     public function getPackageDescription() {

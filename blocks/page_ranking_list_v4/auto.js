@@ -158,3 +158,13 @@ Concrete.event.bind('SitemapSelectPage', function(event) {
         pageList.loadPreview();
     });
 });
+
+function analyticsDateSwap(){
+	sDate = parseInt($('#analyticsStartDate').val());
+	eDate = parseInt($('#analyticsEndDate').val());
+	if(sDate < eDate){
+		SwapDate = $('#analyticsStartDate').val();
+		$('#analyticsStartDate').val($('#analyticsEndDate').val());
+		$('#analyticsEndDate').val(SwapDate);
+	}
+}
